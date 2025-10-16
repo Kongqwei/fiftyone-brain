@@ -77,6 +77,8 @@ class MilvusSimilarityConfig(SimilarityConfig):
         ca_pem_path=None,
         server_pem_path=None,
         server_name=None,
+        index_params=None,
+        search_params=None,
         **kwargs,
     ):
         if metric not in _SUPPORTED_METRICS:
@@ -103,6 +105,8 @@ class MilvusSimilarityConfig(SimilarityConfig):
         self._ca_pem_path = ca_pem_path
         self._server_pem_path = server_pem_path
         self._server_name = server_name
+        self._index_params = index_params
+        self._search_params = search_params
 
     @property
     def method(self):
@@ -207,23 +211,32 @@ class MilvusSimilarityConfig(SimilarityConfig):
     @property
     def supported_aggregations(self):
         return ("mean",)
-
+        
     @property
     def index_params(self):
+        if self._index_params is not None:
+            return self._index_params
         return {
             "metric_type": _SUPPORTED_METRICS[self.metric],
             "index_type": "HNSW",
             "params": {"M": 8, "efConstruction": 64},
         }
-
+    @index_params.setter
+    def index_params(self, value):
+        self._index_params = value
     @property
     def search_params(self):
+        if self._search_params is not None:
+            return self._search_params
         return {
             "HNSW": {
                 "metric_type": _SUPPORTED_METRICS[self.metric],
                 "params": {"ef": 10},
             },
         }
+    @search_params.setter
+    def search_params(self, value):
+        self._search_params = value
 
     def load_credentials(
         self,
